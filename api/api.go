@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"slices"
 )
 
 type APIClientOpts struct {
@@ -53,6 +54,38 @@ func (c *APIClient) GetOnlineUsersCount() (int, error) {
 	slog.Info("Request", "body", bodyObj.Obj)
 
 	return len(bodyObj.Obj), nil
+}
+
+func (c *APIClient) GetUniqueIps() ([]string, error) {
+	body, err := c.doRequest("/panel/api/server/clientIps", http.MethodGet)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get client ips: %w", err)
+	}
+	var bodyObj struct {
+		Obj []struct {
+			Id  int
+			Ips []struct {
+				Ip string
+			}
+		}
+	}
+
+	if err := json.Unmarshal(body, &bodyObj); err != nil {
+		return nil, fmt.Errorf("Failed to unmarshal response: %w", err)
+	}
+
+	var ips []string
+	for _, clinet := range bodyObj.Obj {
+		for _, ip := range clinet.Ips {
+			if slices.Contains(ips, ip.Ip) {
+				continue
+			}
+
+			ips = append(ips, ip.Ip)
+		}
+	}
+
+	return ips, err
 }
 
 func (c *APIClient) createRequest(method, url string) (*http.Request, error) {
