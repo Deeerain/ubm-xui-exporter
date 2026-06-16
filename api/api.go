@@ -1,9 +1,12 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/Deeerain/ubm-xui-exporter/metrics"
 )
 
 type APIClientOpts struct {
@@ -26,6 +29,22 @@ func NewAPIClient(opts APIClientOpts, httpClient *http.Client) *APIClient {
 		opts:       opts,
 		httpClient: httpClient,
 	}
+}
+
+func (c *APIClient) GetOnlineUsersCount() error {
+	body, err := c.doRequest("/panel/api/clients/onlines", http.MethodPost)
+	if err != nil {
+		return fmt.Errorf("Failed to get online users: %w", err)
+	}
+
+	var arr []json.RawMessage
+	if err := json.Unmarshal(body, &arr); err != nil {
+		return fmt.Errorf("Failed to unmarshal response: %w", err)
+	}
+
+	metrics.OnlineUsersCount.Set(float64(len(arr)))
+
+	return nil
 }
 
 func (c *APIClient) createRequest(method, url string) (*http.Request, error) {
