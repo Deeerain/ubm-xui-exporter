@@ -22,7 +22,13 @@ func init() {
 }
 
 func Test_GetOnlineUsers(t *testing.T) {
-	if err := client.GetOnlineUsersCount(); err != nil {
+	count, err := client.GetOnlineUsersCount()
+
+	if err != nil {
 		t.Fatal(err)
+	}
+
+	if count < 0 {
+		t.Fatalf("Count error")
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/Deeerain/ubm-xui-exporter/api"
 	"github.com/Deeerain/ubm-xui-exporter/config"
 	"github.com/Deeerain/ubm-xui-exporter/metrics"
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,10 +16,17 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	apiClient := api.NewAPIClient(api.APIClientOpts{
+		BaseURL:     config.XUIBaseURL,
+		SecretPath:  config.XUISecretPath,
+		AccessToken: config.XUIAccessToken,
+	}, nil)
 	mux := http.NewServeMux()
 	registry := prometheus.NewRegistry()
+
+	collector := metrics.NewXUICollector(apiClient)
 	registry.MustRegister(
-		metrics.OnlineUsersCount,
+		collector,
 	)
 
 	mux.Handle(config.MetricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))

@@ -7,8 +7,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-
-	"github.com/Deeerain/ubm-xui-exporter/metrics"
 )
 
 type APIClientOpts struct {
@@ -39,23 +37,22 @@ func NewAPIClient(opts APIClientOpts, httpClient *http.Client) *APIClient {
 	}
 }
 
-func (c *APIClient) GetOnlineUsersCount() error {
+func (c *APIClient) GetOnlineUsersCount() (int, error) {
 	body, err := c.doRequest("/panel/api/clients/onlines", http.MethodPost)
 	if err != nil {
-		return fmt.Errorf("Failed to get online users: %w", err)
+		return -1, fmt.Errorf("Failed to get online users: %w", err)
 	}
 
 	var bodyObj struct {
 		Obj []string
 	}
 	if err := json.Unmarshal(body, &bodyObj); err != nil {
-		return fmt.Errorf("Failed to unmarshal response: %w", err)
+		return -1, fmt.Errorf("Failed to unmarshal response: %w", err)
 	}
 
 	slog.Info("Request", "body", bodyObj.Obj)
-	metrics.OnlineUsersCount.Set(float64(len(bodyObj.Obj)))
 
-	return nil
+	return len(bodyObj.Obj), nil
 }
 
 func (c *APIClient) createRequest(method, url string) (*http.Request, error) {
