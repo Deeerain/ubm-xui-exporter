@@ -36,7 +36,12 @@ func (c *APIClient) createRequest(method, url string) (*http.Request, error) {
 	return req, nil
 }
 
-func (c *APIClient) doRequest(req *http.Request) ([]byte, error) {
+func (c *APIClient) doRequest(path string, method string) ([]byte, error) {
+	url := fmt.Sprintf("%s%s%s", c.opts.BaseURL, c.opts.SecretPath, path)
+	req, err := c.createRequest(method, url)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create request: %w", err)
+	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to perform request: %w", err)
