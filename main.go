@@ -6,6 +6,7 @@ import (
 
 	"github.com/Deeerain/ubm-xui-exporter/api"
 	"github.com/Deeerain/ubm-xui-exporter/config"
+	"github.com/Deeerain/ubm-xui-exporter/logger"
 	"github.com/Deeerain/ubm-xui-exporter/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -17,7 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	InitLogger(config.LogLevel)
+	logger.Init(config.LogLevel)
 
 	apiClient := api.NewAPIClient(api.APIClientOpts{
 		BaseURL:     config.XUIBaseURL,
@@ -33,6 +34,9 @@ func main() {
 	)
 
 	mux.Handle(config.MetricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
+
+	slog.Info("Start listener", "address", config.ListenAddress)
+
 	if err := http.ListenAndServe(config.ListenAddress, mux); err != nil {
 		slog.Error("Failed to serve", "error", err)
 	}

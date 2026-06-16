@@ -1,11 +1,11 @@
-package main
+package logger
 
 import (
 	"log/slog"
 	"os"
 )
 
-func InitLogger(level string) {
+func Init(level string) {
 	var loggerLevel slog.Level
 	switch level {
 	case "debug":
