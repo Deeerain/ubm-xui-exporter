@@ -1,9 +1,8 @@
 services:
   exporter-tests:
-    image: golang:1.26-alpine
-    working_dir: /app
-    volumes:
-      - .:/app
+    build:
+      context: .
+      target: build
     command: go test -v ./...
     environment:
       - LISTEN_ADDRESS=${LISTEN_ADDRESS:-:8080}
@@ -14,11 +13,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-debug}
 
   exporter:
-    image: golang:1.26-alpine
-    working_dir: /app
-    volumes:
-      - .:/app
-    command: go run main.go
+    build: .
     ports:
       - '8080:8080'
     environment:
