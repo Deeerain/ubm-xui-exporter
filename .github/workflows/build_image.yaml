@@ -1,0 +1,44 @@
+name: Create and publish a Docker image
+
+on:
+  push:
+    branches:
+      - "master"
+    tags:
+      - "*"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Lowercase the username using an Action
+        id: lowercase-step
+        uses: ASzc/change-string-case-action@v6
+        with:
+          string: ${{ github.repository }}
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ steps.lowercase-step.outputs.lowercase }}:latest

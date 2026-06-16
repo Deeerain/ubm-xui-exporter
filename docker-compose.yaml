@@ -1,0 +1,45 @@
+services:
+  exporter-tests:
+    build:
+      context: .
+      target: build
+    command: go test -v ./...
+    environment:
+      - LISTEN_ADDRESS=${LISTEN_ADDRESS:-:8080}
+      - METRICS_PATH=${METRICS_PATH:-/metrics}
+      - XUI_BASE_URL=${XUI_BASE_URL:-http://localhost:5353}
+      - XUI_SECRET_PATH=${XUI_SECRET_PATH:-/}
+      - XUI_ACCESS_TOKEN=${XUI_ACCESS_TOKEN:-abcd}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
+
+  exporter:
+    build: .
+    ports:
+      - '8080:8080'
+    environment:
+      - LISTEN_ADDRESS=${LISTEN_ADDRESS:-:8080}
+      - METRICS_PATH=${METRICS_PATH:-/metrics}
+      - XUI_BASE_URL=${XUI_BASE_URL:-http://localhost:5353}
+      - XUI_SECRET_PATH=${XUI_SECRET_PATH:-/}
+      - XUI_ACCESS_TOKEN=${XUI_ACCESS_TOKEN:-abcd}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
+    networks:
+      - metrics-net
+  
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    depends_on:
+      - exporter
+    ports:
+      - '9090:9090'
+    networks:
+      - metrics-net
+
+
+networks:
+  metrics-net:
+    driver: bridge
