@@ -8,6 +8,8 @@ import (
 
 type APIClientOpts struct {
 	AccessToken string
+	BaseURL     string
+	SecretPath  string
 }
 
 type APIClient struct {
