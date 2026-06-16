@@ -16,6 +16,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	InitLogger(config.LogLevel)
+
 	apiClient := api.NewAPIClient(api.APIClientOpts{
 		BaseURL:     config.XUIBaseURL,
 		SecretPath:  config.XUISecretPath,

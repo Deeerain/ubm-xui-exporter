@@ -11,6 +11,7 @@ type Config struct {
 	XUIBaseURL     string
 	XUISecretPath  string
 	XUIAccessToken string
+	LogLevel       string
 }
 
 func ParseEnv() (*Config, error) {
@@ -21,6 +22,7 @@ func ParseEnv() (*Config, error) {
 	config.XUIBaseURL = parseEnvOrDefault("XUI_BASE_URL", "http://localhost:8080")
 	config.XUISecretPath = parseEnvOrDefault("XUI_SECRET_PATH", "/")
 	config.XUIAccessToken = parseEnvOrDefault("XUI_ACCESS_TOKEN", "")
+	config.LogLevel = parseEnvOrDefault("LOG_LEVEL", "info")
 
 	if config.XUIAccessToken == "" {
 		return nil, fmt.Errorf("XUI_ACCESS_TOKEN is required")
