@@ -1,1 +1,13 @@
 .env
+.github
+README.md
+docker-compose.yaml
+Dockerfile
+docker-compose.yaml
+Dockerfile
+.dockerignore
+.env
+.git
+github
+.gitignore
+prometheus.yml
