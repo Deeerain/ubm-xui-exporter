@@ -32,3 +32,11 @@ func Test_GetOnlineUsers(t *testing.T) {
 		t.Fatalf("Count error")
 	}
 }
+
+func Test_GetUniqueIps(t *testing.T) {
+	_, err := client.GetUniqueIps()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+}
