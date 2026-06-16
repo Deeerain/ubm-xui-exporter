@@ -1,9 +1,11 @@
 package api
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/Deeerain/ubm-xui-exporter/metrics"
@@ -22,7 +24,13 @@ type APIClient struct {
 
 func NewAPIClient(opts APIClientOpts, httpClient *http.Client) *APIClient {
 	if httpClient == nil {
-		httpClient = http.DefaultClient
+		httpClient = &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		}
 	}
 
 	return &APIClient{
@@ -37,12 +45,15 @@ func (c *APIClient) GetOnlineUsersCount() error {
 		return fmt.Errorf("Failed to get online users: %w", err)
 	}
 
-	var arr []json.RawMessage
-	if err := json.Unmarshal(body, &arr); err != nil {
+	var bodyObj struct {
+		Obj []string
+	}
+	if err := json.Unmarshal(body, &bodyObj); err != nil {
 		return fmt.Errorf("Failed to unmarshal response: %w", err)
 	}
 
-	metrics.OnlineUsersCount.Set(float64(len(arr)))
+	slog.Info("Request", "body", bodyObj.Obj)
+	metrics.OnlineUsersCount.Set(float64(len(bodyObj.Obj)))
 
 	return nil
 }
