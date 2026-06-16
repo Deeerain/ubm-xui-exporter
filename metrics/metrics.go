@@ -8,8 +8,9 @@ import (
 )
 
 type XUICollector struct {
-	apiClient  *api.APIClient
-	onlineDesc *prometheus.Desc
+	apiClient     *api.APIClient
+	onlineDesc    *prometheus.Desc
+	uniqueIpsDesc *prometheus.Desc
 }
 
 func NewXUICollector(apiClient *api.APIClient) *XUICollector {
@@ -19,12 +20,18 @@ func NewXUICollector(apiClient *api.APIClient) *XUICollector {
 			"Currnet number of online users connected to x-ui.",
 			nil, nil,
 		),
+		uniqueIpsDesc: prometheus.NewDesc(
+			"threexui_unique_ip_count",
+			"Current member of unique ips connected to x-ui.",
+			nil, nil,
+		),
 		apiClient: apiClient,
 	}
 }
 
 func (c *XUICollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.onlineDesc
+	ch <- c.uniqueIpsDesc
 }
 
 func (c *XUICollector) Collect(ch chan<- prometheus.Metric) {
@@ -38,5 +45,17 @@ func (c *XUICollector) Collect(ch chan<- prometheus.Metric) {
 		c.onlineDesc,
 		prometheus.GaugeValue,
 		float64(currentUsers),
+	)
+
+	uniqueIps, err := c.apiClient.GetUniqueIps()
+	if err != nil {
+		slog.Error("Failed to get metrics", "error", err)
+		return
+	}
+
+	ch <- prometheus.MustNewConstMetric(
+		c.uniqueIpsDesc,
+		prometheus.GaugeValue,
+		float64(len(uniqueIps)),
 	)
 }
