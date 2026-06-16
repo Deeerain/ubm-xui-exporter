@@ -1,9 +1,11 @@
 package main
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/Deeerain/ubm-xui-exporter/config"
+	"github.com/Deeerain/ubm-xui-exporter/metrics"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -13,9 +15,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	registry := prometheus.NewRegistry()
 	mux := http.NewServeMux()
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(
+		metrics.OnlineUsersCount,
+	)
 
 	mux.Handle(config.MetricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
-	http.ListenAndServe(config.ListenAddress, mux)
+	if err := http.ListenAndServe(config.ListenAddress, mux); err != nil {
+		slog.Error("Failed to serve", "error", err)
+	}
 }
