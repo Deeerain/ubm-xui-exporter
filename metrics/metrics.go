@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/Deeerain/ubm-xui-exporter/api"
 	"github.com/prometheus/client_golang/prometheus"
@@ -35,6 +36,10 @@ func (c *XUICollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *XUICollector) Collect(ch chan<- prometheus.Metric) {
+	startTime := time.Now()
+
+	slog.Debug("Starting scrap metrics")
+
 	currentUsers, err := c.apiClient.GetOnlineUsersCount()
 	if err != nil {
 		slog.Error("Failed to get metrics", "error", err)
@@ -58,4 +63,6 @@ func (c *XUICollector) Collect(ch chan<- prometheus.Metric) {
 		prometheus.GaugeValue,
 		float64(len(uniqueIps)),
 	)
+
+	slog.Info("Successfuly scraped metrics", "duration_ms", time.Since(startTime).Microseconds())
 }

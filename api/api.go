@@ -51,8 +51,6 @@ func (c *APIClient) GetOnlineUsersCount() (int, error) {
 		return -1, fmt.Errorf("Failed to unmarshal response: %w", err)
 	}
 
-	slog.Info("Request", "body", bodyObj.Obj)
-
 	return len(bodyObj.Obj), nil
 }
 
@@ -111,6 +109,8 @@ func (c *APIClient) doRequest(path string, method string) ([]byte, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		slog.Warn("Failed to get response", "status_code", resp.StatusCode)
+
 		return nil, fmt.Errorf("Received non-OK response: %s", resp.Status)
 	}
 
@@ -118,6 +118,8 @@ func (c *APIClient) doRequest(path string, method string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read response body: %w", err)
 	}
+
+	slog.Debug("Requst", "url", url, "status_code", resp.StatusCode)
 
 	return body, nil
 }
