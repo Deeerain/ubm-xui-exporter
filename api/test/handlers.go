@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 
 	"github.com/Deeerain/ubm-xui-exporter/api"
 )
@@ -48,4 +49,17 @@ func UniqueIpsHandler(mockToken string) http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(mockResponse)
 	}
+}
+
+func CreateMockXuiServer(mockToken string, secretPath string) *httptest.Server {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc(makeUrl(secretPath, "/panel/api/clients/onlines"), OnlinesHandler(mockToken, "test-1", "test-2"))
+	mux.HandleFunc(makeUrl(secretPath, "/panel/api/server/clientIps"), UniqueIpsHandler(mockToken))
+
+	return httptest.NewServer(mux)
+}
+
+func makeUrl(mockSecretPath, path string) string {
+	return fmt.Sprintf("%s%s", mockSecretPath, path)
 }

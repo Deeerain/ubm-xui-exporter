@@ -1,9 +1,7 @@
 package test
 
 import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/Deeerain/ubm-xui-exporter/api"
@@ -16,13 +14,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	mux := http.NewServeMux()
-
-	mux.HandleFunc(makeUrl("/panel/api/clients/onlines"), OnlinesHandler(mockToken, "test-1", "test-2"))
-	mux.HandleFunc(makeUrl("/panel/api/server/clientIps"), UniqueIpsHandler(mockToken))
-
-	server := httptest.NewServer(mux)
-	defer server.Close()
+	server := CreateMockXuiServer(mockToken, mockSecretPath)
 
 	client = api.NewAPIClient(api.APIClientOpts{
 		AccessToken: mockToken,
@@ -30,11 +22,11 @@ func TestMain(m *testing.M) {
 		SecretPath:  mockSecretPath,
 	}, nil)
 
-	m.Run()
-}
+	code := m.Run()
 
-func makeUrl(path string) string {
-	return fmt.Sprintf("%s%s", mockSecretPath, path)
+	server.Close()
+
+	os.Exit(code)
 }
 
 func Test_GetOnlineUsers(t *testing.T) {
