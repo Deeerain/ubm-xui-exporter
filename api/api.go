@@ -44,9 +44,7 @@ func (c *APIClient) GetOnlineUsersCount() (int, error) {
 		return -1, fmt.Errorf("Failed to get online users: %w", err)
 	}
 
-	var bodyObj struct {
-		Obj []string
-	}
+	var bodyObj ApiResponse[[]string]
 	if err := json.Unmarshal(body, &bodyObj); err != nil {
 		return -1, fmt.Errorf("Failed to unmarshal response: %w", err)
 	}
@@ -59,14 +57,7 @@ func (c *APIClient) GetUniqueIps() ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get client ips: %w", err)
 	}
-	var bodyObj struct {
-		Obj []struct {
-			Id  int
-			Ips []struct {
-				Ip string
-			}
-		}
-	}
+	var bodyObj ApiResponse[[]ClientIpInfo]
 
 	if err := json.Unmarshal(body, &bodyObj); err != nil {
 		return nil, fmt.Errorf("Failed to unmarshal response: %w", err)
