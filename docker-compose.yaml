@@ -2,7 +2,7 @@ services:
   exporter-tests:
     build:
       context: .
-      target: build
+      target: builder
     command: go test -v ./...
     environment:
       - LISTEN_ADDRESS=${LISTEN_ADDRESS:-:8080}
