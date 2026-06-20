@@ -12,6 +12,7 @@ type XUICollector struct {
 	apiClient     *api.APIClient
 	onlineDesc    *prometheus.Desc
 	uniqueIpsDesc *prometheus.Desc
+	cpuUsageDesc  *prometheus.Desc
 }
 
 func NewXUICollector(apiClient *api.APIClient) *XUICollector {
@@ -26,6 +27,11 @@ func NewXUICollector(apiClient *api.APIClient) *XUICollector {
 			"Current member of unique ips connected to x-ui.",
 			nil, nil,
 		),
+		cpuUsageDesc: prometheus.NewDesc(
+			"threexui_cpu_usage",
+			"",
+			nil, nil,
+		),
 		apiClient: apiClient,
 	}
 }
@@ -33,6 +39,7 @@ func NewXUICollector(apiClient *api.APIClient) *XUICollector {
 func (c *XUICollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.onlineDesc
 	ch <- c.uniqueIpsDesc
+	ch <- c.cpuUsageDesc
 }
 
 func (c *XUICollector) Collect(ch chan<- prometheus.Metric) {
@@ -62,6 +69,20 @@ func (c *XUICollector) Collect(ch chan<- prometheus.Metric) {
 		c.uniqueIpsDesc,
 		prometheus.GaugeValue,
 		float64(len(uniqueIps)),
+	)
+
+	serverStatus, err := c.apiClient.GetServerStatus()
+	if err != nil {
+		slog.Error("Failed to get metrics", "error", err)
+		return
+	}
+
+	slog.Debug("Status", "value", serverStatus)
+
+	ch <- prometheus.MustNewConstMetric(
+		c.cpuUsageDesc,
+		prometheus.GaugeValue,
+		float64(serverStatus.Cpu),
 	)
 
 	slog.Info("Successfuly scraped metrics", "duration_ms", time.Since(startTime).Microseconds())
