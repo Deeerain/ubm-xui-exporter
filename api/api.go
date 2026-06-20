@@ -77,6 +77,21 @@ func (c *APIClient) GetUniqueIps() ([]string, error) {
 	return ips, err
 }
 
+func (c *APIClient) GetServerStatus() (*ServerStatus, error) {
+	body, err := c.doRequest("/panel/api/server/status", http.MethodGet)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get server status: %w", err)
+	}
+
+	var bodyObj ApiResponse[ServerStatus]
+
+	if err := json.Unmarshal(body, &bodyObj); err != nil {
+		return nil, fmt.Errorf("Failed to unmarshal body: %w", err)
+	}
+
+	return &bodyObj.Obj, nil
+}
+
 func (c *APIClient) createRequest(method, url string) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
