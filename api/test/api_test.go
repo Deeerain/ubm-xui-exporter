@@ -52,3 +52,11 @@ func Test_GetUniqueIps(t *testing.T) {
 		t.Error("Not unique ips")
 	}
 }
+
+func Test_GetServerStatus(t *testing.T) {
+	status, err := client.GetServerStatus()
+
+	if err != nil || status == nil {
+		t.Fatal(err)
+	}
+}
